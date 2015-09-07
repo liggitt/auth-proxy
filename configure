@@ -1,0 +1,127 @@
+#!/bin/bash
+
+set -e
+
+cd /
+
+# Get environment
+export host=`hostname -f`
+export realm=`hostname -f | tr [a-z] [A-Z]`
+export user=`whoami`
+export BACKEND=${BACKEND:-https://backend.example.com}
+
+
+
+
+# Edit kerberos config files, replacing EXAMPLE.COM with $realm, and example.com with $host
+for file in /etc/krb5.conf /var/kerberos/krb5kdc/kdc.conf /var/kerberos/krb5kdc/kadm5.acl; do
+  sed -i.bak1 -e "s/EXAMPLE\.COM/$realm/g" $file
+  sed -i.bak2 -e "s/example\.com/$host/g" $file
+done
+
+# Create ticket database
+kdb5_util create -s -r "${realm}" -P password
+
+# Add local user as admin
+kadmin.local -q "addprinc -pw password ${user}/admin@${realm}"
+
+# Start ticket server
+krb5kdc
+
+# Add user principal for current user, for test users user1-user5, the host principal (for ssh), the HTTP principal (for Apache), and create keytab
+users=($user user1 user2 user3 user4 user5)
+for u in ${users[@]}; do
+  echo "Adding user ${u}..."
+  kadmin.local -q "addprinc -pw password ${u}@${realm}"
+done
+
+# Setup keytab for sshd
+kadmin.local -q "addprinc -randkey host/${host}@${realm}"
+kadmin.local -q "ktadd -k /etc/krb5.keytab host/${host}@${realm}"
+
+# Setup keytab for apache
+kadmin.local -q "addprinc -randkey HTTP/${host}@${realm}"
+kadmin.local -q "ktadd -k /etc/httpd.keytab HTTP/${host}@${realm}"
+chown apache /etc/httpd.keytab
+
+
+
+
+# configure Apache proxy and auth
+sed -i.bak -e "s#example.com#${BACKEND}#g" /etc/httpd/conf.d/proxy.conf
+
+# Set up apache htpasswd file
+htpasswd -b -c /etc/httpd.htpasswd "${user}@${realm}" "password"
+users=(user1 user2 user3 user4 user5)
+for u in ${users[@]}; do
+  echo "Adding user ${u}..."
+  htpasswd -b /etc/httpd.htpasswd "${u}@${realm}" "password"
+done
+chown apache /etc/httpd.htpasswd
+
+# Start apache
+httpd -k start
+
+
+
+
+echo "
+
+
+
+
+
+Proxying http://$host/negotiate -> ${BACKEND}/ using Kerberos auth
+Proxying http://$host/basic     -> ${BACKEND}/ using Kerberos auth
+To change proxy hostname, set docker host (-h ...) on start
+To change backend, set 'BACKEND' envvar on start (e.g. BACKEND=https://foo.com)
+Authenticated principal is passed to backend as a 'Remote-User' header
+
+To use this container as a KDC ticket server from your desktop:
+
+1. Alias the Docker IP to this container's hostname:
+# add to /etc/hosts:
+172.17.42.1 $host
+
+2. Configure Kerberos to use this server as the ticket server for host=$host and realm=$realm
+# add to /etc/krb5.conf:
+[realms]
+$realm = {
+  kdc = $host
+  admin_server = $host
+  default_domain = $host
+}
+
+[domain_realm]
+.$host = $realm
+$host = $realm
+
+3. Configure Firefox to use negotiate auth with the domain:
+about:config
+network.negotiate-auth.trusted-uris=$host
+
+Kerberos:
+    Log in:
+    kinit user1@$realm (password = 'password')
+
+    Log out:
+    kdestroy
+
+    List active tickets:
+    klist
+
+Basic auth:
+    Log in:
+    user1@${realm} (password = 'password')
+"
+
+
+
+
+if [ -t 0 ] ; then
+	echo 'Starting interactive shell.'
+	/bin/bash
+else
+	echo 'Go loop.'
+	while true ; do sleep 1000 & wait $! ; done
+fi

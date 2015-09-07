@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login</title>
+    <style>
+    	body  { text-align: center; margin-top: 5em; font-family: sans-serif;}
+    	form  { display: inline-block; margin: 0 auto; }
+    	label { display: inline-block; width: 100px; text-align: right; }
+    	input { display: inline-block; width: 200px; }
+    	button { width: 200px; }
+    	.row { margin-top: 10px;}
+    </style>
+  </head>
+  <body>
+    <form action="" method="POST">
+      <div class="row">
+        <label for="inputUsername">Username:</label>
+        <input id="inputUsername" autofocus="autofocus" name="httpd_username" type="text">
+      </div>
+      <div class="row">
+        <label for="inputPassword">Password:</label>
+          <input id="inputPassword" name="httpd_password" value="" type="password">
+      </div>
+      <div class="row">
+        <button type="submit" name="login" value="Login">Log In</button>
+      </div>
+    </form>
+  </body>
+</html>

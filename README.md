@@ -2,12 +2,13 @@
 
 ## Overview
 
-This repo and Docker image provides a test proxy server, configured with Kerberos and Basic authentication.
+This repo and Docker image provides a test proxy server, configured with Kerberos, Basic and Form authentication.
 
 On startup, it sets up the following
 * Kerberos ticket server for `$PROXY_HOST` (defaulting to the host `mydomain.com` and the realm `MYDOMAIN.COM`)
 * Apache proxy from `http://$PROXY_HOST:80/negotiate/*` to `$BACKEND`, secured with Kerberos auth
 * Apache proxy from `http://$PROXY_HOST:80/basic/*` to `$BACKEND`, secured with basic auth
+* Apache proxy from `http://$PROXY_HOST:80/form/*` to `$BACKEND`, secured with form auth
 * 5 test users, user1-user5@REALM, with password `password` (e.g. `user1@MYDOMAIN.COM`/`password`)
 
 # Docker image setup

@@ -2,9 +2,21 @@
 
 ## Overview
 
-This repo and Docker image provides a test proxy server, configured with Kerberos, Basic and Form authentication.
+This repo and Docker image provides a test proxy server, configured with Kerberos, Basic, and Form authentication.
 
-On startup, it sets up the following
+To start, run like this:
+```
+docker run -p 80:80 -p 443:443 -p 88:88 -h mydomain.com -e BACKEND=https://192.168.1.100:443 -ti liggitt/auth-proxy
+```
+
+Invocation details:
+* 80 is the http proxy port
+* 443 is the https proxy port
+* 88 is the Kerberos ticket server port
+* `mydomain.com` can be replaced with any hostname you like, just adjust the setup instructions appropriately
+* `$BACKEND` should be set to the base URL you want proxied (with no trailing slash). The host or IP must be accessible from within the container (so `localhost` probably won't work)
+
+On startup, it sets up the following:
 * Kerberos ticket server for `$PROXY_HOST` (defaulting to the host `mydomain.com` and the realm `MYDOMAIN.COM`)
 * Apache proxy from `http://$PROXY_HOST:80/negotiate/*` to `$BACKEND`, secured with Kerberos auth
 * Apache proxy from `http://$PROXY_HOST:80/basic/*` to `$BACKEND`, secured with basic auth

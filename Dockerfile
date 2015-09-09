@@ -11,7 +11,7 @@ RUN dnf install -y \
   pam_krb5 \
   httpd \
   apr-util-openssl \
-  mod_auth_kerb \
+  mod_auth_gssapi \
   mod_session \
   mod_ssl \
   && dnf clean all

@@ -48,7 +48,8 @@ chown apache /etc/httpd.keytab
 
 
 # configure Apache proxy and auth
-sed -i.bak -e "s#example.com#${BACKEND}#g" /etc/httpd/conf.d/proxy.conf
+sed -i.bak1 -e "s#EXAMPLE\.COM#$realm#g" /etc/httpd/conf.d/proxy.conf
+sed -i.bak2 -e "s#example\.com#$BACKEND#g" /etc/httpd/conf.d/proxy.conf
 
 # Set up apache htpasswd file
 htpasswd -b -c /etc/httpd.htpasswd "${user}@${realm}" "password"
@@ -71,8 +72,10 @@ echo "
 
 
 
-Proxying http://$host/negotiate -> ${BACKEND}/ using Kerberos auth
-Proxying http://$host/basic     -> ${BACKEND}/ using Kerberos auth
+Proxying http://$host/mod_auth_gssapi           -> ${BACKEND}/
+Proxying http://$host/mod_auth_basic            -> ${BACKEND}/
+Proxying http://$host/mod_auth_form             -> ${BACKEND}/
+Proxying http://$host/mod_intercept_form_submit -> ${BACKEND}/
 To change proxy hostname, set docker host (-h ...) on start
 To change backend, set 'BACKEND' envvar on start (e.g. BACKEND=https://foo.com)
 Authenticated principal is passed to backend as a 'Remote-User' header

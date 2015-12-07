@@ -12,6 +12,7 @@ RUN dnf install -y \
   krb5-server \
   krb5-workstation \
   mod_auth_gssapi \
+  mod_auth_kerb \
   mod_intercept_form_submit \
   mod_session \
   mod_ssl \

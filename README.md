@@ -18,7 +18,8 @@ Invocation details:
 
 On startup, it sets up the following:
 * Kerberos ticket server for `$PROXY_HOST` (defaulting to the host `mydomain.com` and the realm `MYDOMAIN.COM`)
-* Apache proxy from `http://$PROXY_HOST:80/mod_auth_gssapi/*` to `$BACKEND`, secured by negotiate auth backed by Kerberos
+* Apache proxy from `http://$PROXY_HOST:80/mod_auth_gssapi/*` to `$BACKEND`, secured by negotiate auth backed by Kerberos (mod_auth_gssapi)
+* Apache proxy from `http://$PROXY_HOST:80/mod_auth_kerb/*` to `$BACKEND`, secured by negotiate auth backed by Kerberos (mod_auth_kerb)
 * Apache proxy from `http://$PROXY_HOST:80/mod_auth_basic/*` to `$BACKEND`, secured by basic auth backed by Kerberos
 * Apache proxy from `http://$PROXY_HOST:80/mod_auth_form/*` to `$BACKEND`, secured by form auth backed by a htpasswd file
 * Apache proxy from `http://$PROXY_HOST:80/mod_intercept_form_submit/*` to `$BACKEND`, secured by form interception auth backed by Kerberos

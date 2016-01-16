@@ -18,9 +18,9 @@ ifndef BACKEND
 endif
 ifndef PROXY_HOST
 	@echo '$$(PROXY_HOST) is not defined, using mydomain.com'
-	docker run -p 80:80 -p 88:88 -p 443:443 -h mydomain.com -e BACKEND=$(BACKEND) -ti $(NAME)
+	docker run -p 80:80 -p 88:88 -p 88:88/udp -p 443:443 -h mydomain.com -v /dev/urandom:/dev/random -e BACKEND=$(BACKEND) -ti $(NAME)
 else
-	docker run -p 80:80 -p 88:88 -p 443:443 -h $(PROXY_HOST) -e BACKEND=$(BACKEND) -ti $(NAME)
+	docker run -p 80:80 -p 88:88 -p 88:88/udp -p 443:443 -h $(PROXY_HOST) -v /dev/urandom:/dev/random -e BACKEND=$(BACKEND) -ti $(NAME)
 endif
 
 tag_latest:

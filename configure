@@ -11,7 +11,20 @@ export user=`whoami`
 export BACKEND=${BACKEND:-https://backend.example.com}
 
 
+# Create server cert/key
+pushd /etc/pki/tls/
+  # name it localhost.{crt,key} to match the default https ssl.conf
+  openssl req -subj "/CN=${host}" -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout localhost.key -out localhost.crt -sha256
+  mv -f localhost.crt certs/localhost.crt
+  mv -f localhost.key private/localhost.key
+popd
 
+# Create mod_auth_mellon service provider config
+pushd /etc/httpd/conf.d
+  /usr/sbin/mellon_create_metadata.sh https://${host} https://${host}/mellon
+  # Create a dummy saml idp file
+  touch saml_idp.xml
+popd
 
 # Edit kerberos config files, replacing EXAMPLE.COM with $realm, and example.com with $host
 for file in /etc/krb5.conf /var/kerberos/krb5kdc/kdc.conf /var/kerberos/krb5kdc/kadm5.acl; do
@@ -48,8 +61,9 @@ chown apache /etc/httpd.keytab
 
 
 # configure Apache proxy and auth
-sed -i.bak1 -e "s#EXAMPLE\.COM#$realm#g" /etc/httpd/conf.d/proxy.conf
-sed -i.bak2 -e "s#example\.com#$BACKEND#g" /etc/httpd/conf.d/proxy.conf
+sed -i.bak1 -e "s#proxy\.example\.com#$host#g" /etc/httpd/conf.d/proxy.conf
+sed -i.bak2 -e "s#https://backend\.example\.com#$BACKEND#g" /etc/httpd/conf.d/proxy.conf
+
 
 # Set up apache htpasswd file
 htpasswd -b -c /etc/httpd.htpasswd "${user}@${realm}" "password"
@@ -75,6 +89,7 @@ echo "
 Proxying http://$host/mod_auth_gssapi           -> ${BACKEND}/
 Proxying http://$host/mod_auth_basic            -> ${BACKEND}/
 Proxying http://$host/mod_auth_form             -> ${BACKEND}/
+Proxying http://$host/mod_auth_mellon           -> ${BACKEND}/
 Proxying http://$host/mod_intercept_form_submit -> ${BACKEND}/
 To change proxy hostname, set docker host (-h ...) on start
 To change backend, set 'BACKEND' envvar on start (e.g. BACKEND=https://foo.com)
@@ -84,7 +99,9 @@ To use this container as a KDC ticket server from your desktop:
 
 1. Alias the Docker IP to this container's hostname:
 # add to /etc/hosts:
-172.17.42.1 $host
+172.17.42.1       $host
+# on boot2docker, your Docker IP might be something like this instead:
+# 192.168.99.100  $host
 
 2. Configure Kerberos to use this server as the ticket server for host=$host and realm=$realm
 # add to /etc/krb5.conf:
@@ -116,6 +133,12 @@ Kerberos:
 Basic auth:
     Log in:
     user1@${realm} (password = 'password')
+    
+To integrate SAML auth:
+
+1. Download your IDP's metadata XML to /etc/httpd/conf.d/saml_idp.xml
+
+2. Restart httpd
 "
 
 

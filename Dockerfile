@@ -1,5 +1,5 @@
-# Clone from the Fedora 22 image
-FROM fedora:22
+# Clone from the Fedora 23 image
+FROM fedora:23
 
 MAINTAINER Jordan Liggitt <jliggitt@redhat.com>
 
@@ -13,6 +13,7 @@ RUN dnf install -y \
   krb5-workstation \
   mod_auth_gssapi \
   mod_auth_kerb \
+  mod_auth_mellon \
   mod_intercept_form_submit \
   mod_session \
   mod_ssl \
@@ -24,6 +25,9 @@ ADD krb5.conf /etc/krb5.conf
 ADD kdc.conf  /var/kerberos/krb5kdc/kdc.conf
 ADD kadm5.acl /var/kerberos/krb5kdc/kadm5.acl
 ADD httpd-pam /etc/pam.d/httpd-pam
+
+# Add mod_auth_mellon setup script
+ADD mellon_create_metadata.sh /usr/sbin/mellon_create_metadata.sh
 
 # Add conf file for Apache
 ADD proxy.conf /etc/httpd/conf.d/proxy.conf

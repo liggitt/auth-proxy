@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repo and Docker image provides a test proxy server, configured with Kerberos, Basic, and Form authentication.
+This repo and Docker image provides a test proxy server, configured with Kerberos, Basic, Form and SAML authentication.
 
 To start, run like this:
 ```
@@ -18,13 +18,14 @@ Invocation details:
 
 On startup, it sets up the following:
 * Kerberos ticket server for `$PROXY_HOST` (defaulting to the host `mydomain.com` and the realm `MYDOMAIN.COM`)
-* Apache proxy from `http://$PROXY_HOST:80/mod_auth_gssapi/*` to `$BACKEND`, secured by negotiate auth backed by Kerberos (mod_auth_gssapi)
-* Apache proxy from `http://$PROXY_HOST:80/mod_auth_gssapi_basic/*` to `$BACKEND`, secured by negotiate auth backed by Kerberos (mod_auth_gssapi) with basic auth fallback
-* Apache proxy from `http://$PROXY_HOST:80/mod_auth_kerb/*` to `$BACKEND`, secured by negotiate auth backed by Kerberos (mod_auth_kerb)
-* Apache proxy from `http://$PROXY_HOST:80/mod_auth_kerb_basic/*` to `$BACKEND`, secured by negotiate auth backed by Kerberos (mod_auth_kerb) with basic auth fallback
-* Apache proxy from `http://$PROXY_HOST:80/mod_auth_basic/*` to `$BACKEND`, secured by basic auth backed by Kerberos
-* Apache proxy from `http://$PROXY_HOST:80/mod_auth_form/*` to `$BACKEND`, secured by form auth backed by a htpasswd file
-* Apache proxy from `http://$PROXY_HOST:80/mod_intercept_form_submit/*` to `$BACKEND`, secured by form interception auth backed by Kerberos
+* Apache proxy from `https://$PROXY_HOST/mod_auth_gssapi/*` to `$BACKEND`, secured by negotiate auth backed by Kerberos (mod_auth_gssapi)
+* Apache proxy from `https://$PROXY_HOST/mod_auth_gssapi_basic/*` to `$BACKEND`, secured by negotiate auth backed by Kerberos (mod_auth_gssapi) with basic auth fallback
+* Apache proxy from `https://$PROXY_HOST/mod_auth_kerb/*` to `$BACKEND`, secured by negotiate auth backed by Kerberos (mod_auth_kerb)
+* Apache proxy from `https://$PROXY_HOST/mod_auth_kerb_basic/*` to `$BACKEND`, secured by negotiate auth backed by Kerberos (mod_auth_kerb) with basic auth fallback
+* Apache proxy from `https://$PROXY_HOST/mod_auth_basic/*` to `$BACKEND`, secured by basic auth backed by Kerberos
+* Apache proxy from `https://$PROXY_HOST/mod_auth_form/*` to `$BACKEND`, secured by form auth backed by a htpasswd file
+* Apache proxy from `https://$PROXY_HOST/mod_auth_mellon/*` to `$BACKEND`, secured by SAML auth with the IDP metadata in /etc/httpd/conf.d/saml_idp.xml
+* Apache proxy from `https://$PROXY_HOST/mod_intercept_form_submit/*` to `$BACKEND`, secured by form interception auth backed by Kerberos
 * 5 test users, user1-user5@REALM, with password `password` (e.g. `user1@MYDOMAIN.COM`/`password`)
 
 # Docker image setup
@@ -183,3 +184,21 @@ The following examples assume `$PROXY_HOST` was set to `mydomain.com`, and the `
   < Content-Length: 252
   ...
   ```
+
+### SAML auth
+
+1. Copy your IDP's metadata XML to /etc/httpd/conf.d/saml_idp.xml and restart httpd (`httpd -k restart`)
+
+2. An example IDP can be created at https://auth0.com/. After creating an account, edit the default app's *Addons > SAML2 Web App* settings as follows:
+
+    *Settings > Application Callback URL*: https://mydomain.com/mellon/postResponse
+
+    *Settings > Settings*: 
+    ```
+    {
+        "audience":  "https://mydomain.com",
+        ...
+    }
+    ```
+
+    *Usage > Identity Provider Metadata*: Copy to /etc/httpd/conf.d/saml_idp.xml in your proxy image and restart httpd (`httpd -k restart`) 

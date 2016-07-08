@@ -73,6 +73,7 @@ for u in ${users[@]}; do
   htpasswd -b /etc/httpd.htpasswd "${u}@${realm}" "password"
 done
 chown apache /etc/httpd.htpasswd
+chown apache /etc/httpd/logs
 
 # Start apache
 httpd -k start

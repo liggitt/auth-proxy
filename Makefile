@@ -18,13 +18,13 @@ ifndef BACKEND
 endif
 ifndef PROXY_HOST
 	@echo '$$(PROXY_HOST) is not defined, using mydomain.com'
-	docker run -p 80:80 -p 88:88 -p 88:88/udp -p 443:443 -h mydomain.com -v /dev/urandom:/dev/random -e BACKEND=$(BACKEND) -ti $(NAME)
+	docker run --privileged -p 80:80 -p 88:88 -p 88:88/udp -p 443:443 -h mydomain.com -v /dev/urandom:/dev/random -e BACKEND=$(BACKEND) -ti $(NAME)
 else
-	docker run -p 80:80 -p 88:88 -p 88:88/udp -p 443:443 -h $(PROXY_HOST) -v /dev/urandom:/dev/random -e BACKEND=$(BACKEND) -ti $(NAME)
+	docker run --privileged -p 80:80 -p 88:88 -p 88:88/udp -p 443:443 -h $(PROXY_HOST) -v /dev/urandom:/dev/random -e BACKEND=$(BACKEND) -ti $(NAME)
 endif
 
 tag_latest:
-	docker tag -f $(NAME):$(VERSION) $(NAME):latest
+	docker tag $(NAME):$(VERSION) $(NAME):latest
 
 release: test tag_latest
 	@if ! docker images $(NAME) | awk '{ print $$2 }' | grep -q -F $(VERSION); then echo "$(NAME) version $(VERSION) is not yet built. Please run 'make build'"; false; fi

@@ -17,16 +17,7 @@ if [ "$#" -lt 2 ]; then
 fi
 
 ENTITYID="$1"
-if [ -z "$ENTITYID" ]; then
-    echo "$PROG: An entity ID is required." >&2
-    exit 1
-fi
-
 BASEURL="$2"
-if [ -z "$BASEURL" ]; then
-    echo "$PROG: The URL to the MellonEndpointPath is required." >&2
-    exit 1
-fi
 
 if ! echo "$BASEURL" | grep -q '^https\?://'; then
     echo "$PROG: The URL must start with \"http://\" or \"https://\"." >&2

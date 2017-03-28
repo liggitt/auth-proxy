@@ -13,12 +13,11 @@ test:
 
 run:
 ifndef BACKEND
-	@echo '$$(BACKEND) must be defined (e.g. BACKEND=https://1.2.3.4:8443 make run)'
-	@exit 1
+	@echo '$$(BACKEND) is not defined, using https://api.example.com:8443'
 endif
 ifndef PROXY_HOST
-	@echo '$$(PROXY_HOST) is not defined, using mydomain.com'
-	docker run --privileged -p 80:80 -p 88:88 -p 88:88/udp -p 443:443 -h mydomain.com -v /dev/urandom:/dev/random -e BACKEND=$(BACKEND) -ti $(NAME)
+	@echo '$$(PROXY_HOST) is not defined, using auth.example.com'
+	docker run --privileged -p 80:80 -p 88:88 -p 88:88/udp -p 443:443 -h auth.example.com -v /dev/urandom:/dev/random -e BACKEND=$(BACKEND) -ti $(NAME)
 else
 	docker run --privileged -p 80:80 -p 88:88 -p 88:88/udp -p 443:443 -h $(PROXY_HOST) -v /dev/urandom:/dev/random -e BACKEND=$(BACKEND) -ti $(NAME)
 endif

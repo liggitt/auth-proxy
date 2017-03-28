@@ -8,7 +8,7 @@ cd /
 export host=`hostname -f`
 export realm=`hostname -f | tr [a-z] [A-Z]`
 export user=`whoami`
-export BACKEND=${BACKEND:-https://backend.example.com}
+export BACKEND=${BACKEND:-https://api.example.com:8443}
 
 
 # Create server cert/key

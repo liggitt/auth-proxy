@@ -11,6 +11,8 @@ RUN dnf install -y \
   krb5-libs \
   krb5-server \
   krb5-workstation \
+  php \
+  mod_php \
   mod_auth_gssapi \
   mod_auth_kerb \
   mod_auth_mellon \
@@ -33,7 +35,8 @@ ADD mellon_create_metadata.sh /usr/sbin/mellon_create_metadata.sh
 ADD proxy.conf /etc/httpd/conf.d/proxy.conf
 
 # Add form login files
-ADD login.html /var/www/html/login.html
+ADD login.php /var/www/html/login/index.php
+ADD logout.php /var/www/html/logout/index.php
 
 # 80  = http
 # 443 = https

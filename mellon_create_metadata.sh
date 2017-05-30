@@ -36,7 +36,7 @@ fi
 HOST="$(echo "$BASEURL" | sed 's#^[a-z]*://\([^/]*\).*#\1#')"
 BASEURL="$(echo "$BASEURL" | sed 's#/$##')"
 
-OUTFILE="saml_sp"
+OUTFILE="saml-sp"
 echo "Output files:"
 echo "Private key:               $OUTFILE.key"
 echo "Certificate:               $OUTFILE.cert"
